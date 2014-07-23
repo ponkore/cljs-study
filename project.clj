@@ -8,6 +8,8 @@
    [noir-exception "0.2.2"]
    [reagent "0.4.2"]
    [environ "0.5.0"]
+   [clj-time "0.7.0"]
+   [org.clojure/core.memoize "0.5.6"]
    [com.taoensso/timbre "3.2.1"]
    [org.clojure/clojurescript "0.0-2268"]
    [markdown-clj "0.9.47"]
