@@ -15,16 +15,17 @@
 
 (defn row
   [label & body]
-  [:div.row
-   [:div.col-md-2 [:span label]]
-   [:div.col-md-3 body]])
+  [:div {:class "control-group column-group gutters"}
+   [:label {:for label :class "all-20 align-right"} label]
+   [:div {:class "control all-80"}
+    body]])
 
 (defn text-input
   [id label]
   [row label
    [:input {:type "text"
-            :class "form-control"
             :value (get-value id)
+            :placeholder label
             :onChange #(set-value! id (-> % .-target .-value))}]])
 
 (defn list-item
@@ -32,20 +33,20 @@
   (letfn [(handle-click! []
             (swap! (get states k) not)
             (set-value! id (->> states (filter (fn [[_ v]] @v)) keys)))]
-    [:li {:class (str "list-group-item" (if @(get states k) " active"))
-          :onClick handle-click!}
+    [:li {:class (when @(get states k) "active") :onClick handle-click!}
      v]))
 
 (defn selection-list
   [id label & items]
   (let [states (->> items
-                    (map (fn [[k]] [k (atom false)]))
+                    (map (fn [[k _]] [k (atom false)]))
                     (into {}))]
     (fn []
       [row label
-       [:ul.list-group
-        (for [[k v] items]
-          [list-item id k v states])]])))
+       [:div {:class "ink-navigation"} ;; :ul.list-group
+        [:ul {:class "dropdown"}
+         (for [[k v] items]
+           [list-item id k v states])]]])))
 
 (defn save-doc
   []
@@ -53,28 +54,39 @@
       {:params (:doc @state)
        :handler (fn [_] (swap! state assoc :saved? true))}))
 
-(defn err
-  []
-  (if-let [saved (:saved? @state)]
-    [:p "HOGE"]))
+(defn handle-button-click!
+  [event]
+  ;; (set! (-> event .-target .-disabled) true)
+  ;; ;; TODO: invoke async
+  ;; (set! (-> event .-target .-disabled) false)
+  (save-doc))
 
+(defn basic-alert
+  [label]
+  [:div {:class "ink-alert basic" :role "alert"}
+   [:button {:class "ink-dismiss"} ""]
+   [:p [:b "Info:"] label]])
+
+(defn my-button
+  [label handler & opts] ;; TODO: opts handling
+  [:button {:class "ink-button" :onClick handler} label])
+
+;;
+;; TODO: try checkbox
+;;
 (defn home
   []
-  [:div
-   [:div.page-header [:h1 "Reagent Form"]]
-
-   [err]
+  [:form {:class "ink-form" :action "#"}
+   ;;[:div.page-header [:h1 "Reagent Form"]]
+   (when (:saved? @state) (basic-alert "保存しました。"))
    [text-input :first-name "First name"]
    [text-input :last-name "Last name"]
    [selection-list :favorite-drinks "Favorite drinks"
-    [:coffee "Coffee"] [:beer "Beer"] [:crab-juice "Crab juice"]]
-
-   (if (:saved? @state)
-     [:p "Saved"]
-     [:button {:type "submit"
-               :class "btn btn-default"
-               :onClick save-doc}
-      "Submit"])])
+    [:coffee "Coffee"]
+    [:beer "Beer"]
+    [:crab-juice "Crab juice"]]
+   [my-button "保存" handle-button-click!]
+   ])
 
 ;;start the app
 (reagent/render-component [home] (.getElementById js/document "app"))

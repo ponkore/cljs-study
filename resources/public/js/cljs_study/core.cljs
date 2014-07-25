@@ -4,68 +4,90 @@
 
 (def state (atom {:doc {} :saved? false}))
 
-(defn set-value! [id value]
-      (swap! state assoc :saved? false)
-      (swap! state assoc-in [:doc id] value))
+(defn set-value!
+  [id value]
+  (swap! state assoc :saved? false)
+  (swap! state assoc-in [:doc id] value))
 
-(defn get-value [id]
-      (get-in @state [:doc id]))
+(defn get-value
+  [id]
+  (get-in @state [:doc id]))
 
-(defn row [label & body]
-      [:div.row
-       [:div.col-md-2 [:span label]]
-       [:div.col-md-3 body]])
+(defn row
+  [label & body]
+  [:div {:class "control-group column-group gutters"}
+   [:label {:for label :class "all-20 align-right"} label]
+   [:div {:class "control all-80"}
+    body]])
 
-(defn text-input [id label]
+(defn text-input
+  [id label]
+  [row label
+   [:input {:type "text"
+            :value (get-value id)
+            :placeholder label
+            :onChange #(set-value! id (-> % .-target .-value))}]])
+
+(defn list-item
+  [id k v states]
+  (letfn [(handle-click! []
+            (swap! (get states k) not)
+            (set-value! id (->> states (filter (fn [[_ v]] @v)) keys)))]
+    [:li {:class (when @(get states k) "active") :onClick handle-click!}
+     v]))
+
+(defn selection-list
+  [id label & items]
+  (let [states (->> items
+                    (map (fn [[k _]] [k (atom false)]))
+                    (into {}))]
+    (fn []
       [row label
-       [:input {:type "text"
-                :class "form-control"
-                :value (get-value id)
-                :onChange #(set-value! id (-> % .-target .-value))}]])
+       [:div {:class "ink-navigation"} ;; :ul.list-group
+        [:ul {:class "dropdown"}
+         (for [[k v] items]
+           [list-item id k v states])]]])))
 
-(defn list-item [id k v states]
-      (letfn [(handle-click! []
-                             (swap! (get states k) not)
-                             (set-value! id (->> states (filter (fn [[_ v]] @v)) keys)))]
-             [:li {:class (str "list-group-item" (if @(get states k) " active"))
-                   :onClick handle-click!}
-              v]))
+(defn save-doc
+  []
+  (POST (str js/context "/save")
+      {:params (:doc @state)
+       :handler (fn [_] (swap! state assoc :saved? true))}))
 
-(defn selection-list [id label & items]
-      (let [states (->> items
-                        (map (fn [[k]] [k (atom false)]))
-                        (into {}))]
-           (fn []
-               [row label
-                [:ul.list-group
-                 (for [[k v] items]
-                      [list-item id k v states])]])))
+(defn handle-button-click!
+  [event]
+  ;; (set! (-> event .-target .-disabled) true)
+  ;; ;; TODO: invoke async
+  ;; (set! (-> event .-target .-disabled) false)
+  (save-doc)
+  )
 
-(defn save-doc []
-      (POST (str js/context "/save")
-            {:params (:doc @state)
-             :handler (fn [_] (swap! state assoc :saved? true))}))
+(defn basic-alert
+  [label]
+  [:div {:class "ink-alert basic" :role "alert"}
+   [:button {:class "ink-dismiss"} ""]
+   [:p [:b "Info:"] label]])
 
-(defn err []
-      (if-let [saved (:saved? @state)]
-              [:p "HOGE"]))
+(defn my-button
+  [label handler & opts] ;; TODO: opts handling
+  [:button {:class "ink-button" :onClick handler} label])
 
-(defn home []
-      [:div
-       [:div.page-header [:h1 "Reagent Form"]]
+(defn home
+  []
+  [:form {:class "ink-form" :action "#"}
+   [:div.page-header [:h1 "Reagent Form"]]
 
-       [err]
-       [text-input :first-name "First name"]
-       [text-input :last-name "Last name"]
-       [selection-list :favorite-drinks "Favorite drinks"
-        [:coffee "Coffee"] [:beer "Beer"] [:crab-juice "Crab juice"]]
+   (when (:saved? @state) (basic-alert "保存しました。"))
 
-       (if (:saved? @state)
-         [:p "Saved"]
-         [:button {:type "submit"
-                   :class "btn btn-default"
-                   :onClick save-doc}
-          "Submit"])])
+   [text-input :first-name "First name"]
+   [text-input :last-name "Last name"]
+   [selection-list :favorite-drinks "Favorite drinks"
+    [:coffee "Coffee"]
+    [:beer "Beer"]
+    [:crab-juice "Crab juice"]]
+
+   [my-button "保存" handle-button-click!]
+   ])
 
 ;;start the app
 (reagent/render-component [home] (.getElementById js/document "app"))
