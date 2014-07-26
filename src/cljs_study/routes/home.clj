@@ -5,6 +5,10 @@
             [noir.response :refer [edn]]
             [clojure.pprint :refer [pprint]]))
 
+(defn about-page []
+      (layout/render
+        "about.html" {:content (util/md->html "/md/docs.md")}))
+
 (defn home-page []
       (layout/render
         "home.html" {:content (util/md->html "/md/docs.md")}))
@@ -15,5 +19,6 @@
 
 (defroutes home-routes
   (GET "/" [] (home-page))
+  (GET "/about" [] (about-page))
   (POST "/save" {:keys [body-params]}
     (edn (save-document body-params))))
