@@ -26,11 +26,13 @@
      </div>
  </div>
  <a href="#" id="bModal">Open modal</a>
+{% endblock %}
+
+{% block page-scripts %}
  <script>
      Ink.requireModules( ['Ink.Dom.Selector_1','Ink.UI.Modal_1'], function( Selector, Modal ){
          var modalElement = Ink.s('#test');
          var modalObj = new Modal( modalElement );
      });
  </script>
-
 {% endblock %}
