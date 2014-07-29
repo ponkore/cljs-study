@@ -1,0 +1,34 @@
+{% extends "templates/base.html" %}
+{% block outer-content %}
+  <table id="table1" class="ink-table alternating" data-page-size="6" data-pagination="#myTablePagination">
+     <thead>
+         <tr>
+<!--
+             <th data-sortable="true" width="75%">Pepper</th>
+             <th data-sortable="true" width="25%">Scoville Rating</th>
+ -->
+             <th></th>
+         </tr>
+     </thead>
+     <tbody>
+         <tr>
+             <td></td>
+             <td></td>
+         </tr>
+     </tbody>
+  </table>
+  <nav class="ink-navigation" id="myTablePagination"><ul class="pagination"></ul></nav>
+{% endblock %}
+
+{% block page-scripts %}
+  <script>
+    Ink.requireModules( ['Ink.Dom.Selector_1', 'Ink.UI.Table_1'], function( Selector, Table ) {
+        var tableElement = Ink.s('#table1');
+        var tableObj = new Table( tableElement, { endpoint: '/table-data',
+                                                  processJSONHeaders: function(response) {
+                                                      return {col1:{label:"あああ"}, col2:{label:"いいい"}, col3:{label:"ううう"}};
+                                                  }
+                                                });
+    });
+  </script>
+{% endblock %}

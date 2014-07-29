@@ -2,7 +2,9 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [ajax.core :refer [POST]]))
 
-(def state (atom {:doc {} :saved? false}))
+(def state (atom {:doc {}
+                  :saved? true
+                  :alert-showing? false}))
 
 (defn set-value!
   [id value]
@@ -29,27 +31,15 @@
             :placeholder label
             :onChange #(set-value! id (-> % .-target .-value))}]])
 
-(defn handle-selection-change!
-  [id event]
-  (let [target (-> event .-target)]
-    (set-value! id (-> target .-selectedIndex))))
-
-(defn selection-list
-  [id label & items]
-  (let [states (->> items
-                    (map (fn [[k _]] [k (atom false)]))
-                    (into {}))]
-    (fn []
-      [row label
-       [:select {:name "hoge" :onChange (partial handle-selection-change! id)}
-        (for [[k v] items]
-          [:option {:value k} v])]])))
-
 (defn save-doc
   []
   (POST (str js/context "/save")
       {:params (:doc @state)
-       :handler (fn [_] (swap! state assoc :saved? true))}))
+       :handler (fn [{:keys [status other] :as results}]
+                  (.log js/console status)
+                  (swap! state assoc
+                         :saved? true
+                         :alert-showing? true))}))
 
 (defn handle-button-click!
   [event]
@@ -57,24 +47,26 @@
 
 (defn basic-alert
   [label]
-  [:div {:class "ink-alert basic" :role "alert"}
-   [:button {:class "ink-dismiss"} ""]
-   [:p [:b "Info:"] label]])
+  (fn []
+    (when (:alert-showing? @state)
+      (js/setTimeout #(swap! state assoc :alert-showing? false) 1500)
+      (swap! state assoc :alert-showing? true)
+      [:div {:class "ink-alert basic info" :role "alert"}
+       [:button {:class "ink-dismiss"} " "]
+       [:p [:b "Info:"] label]])))
 
 (defn my-button
   [label handler & opts] ;; TODO: opts handling
-  [:button {:class "ink-button red" :onClick handler} label])
+  [:button {:class "ink-button red"
+            :disabled (:saved? @state)
+            :onClick handler} label])
 
 (defn home
   []
-  [:form {:class "ink-form"}
-   (when (:saved? @state) (basic-alert "保存しました。"))
+  [:form {:class "ink-form" :action "#"}
+   [basic-alert "保存しました。"]
    [text-input :first-name "First name"]
    [text-input :last-name "Last name"]
-   [selection-list :favorite-drinks "Favorite drinks"
-    [:coffee "Coffee"]
-    [:beer "Beer"]
-    [:crab-juice "Crab juice"]]
    [:div {:class "control-group column-group"}
     [my-button "保存" handle-button-click!]]])
 

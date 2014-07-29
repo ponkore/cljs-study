@@ -2,6 +2,14 @@
 <html>
   <head>
     <META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- scripts and styles -->
+    <link rel="stylesheet" type="text/css" href="http://cdn.ink.sapo.pt/3.0.5/css/ink.css"> <!-- inks css file -->
+    <script type="text/javascript" src="http://cdn.ink.sapo.pt/3.0.5/js/ink-all.js"></script> <!-- inks js bundle -->
+    <link rel="stylesheet" type="text/css" href="/css/screen.css">
+    <script type="text/javascript">
+      var context = "{{servlet-context}}";
+    </script>
+    <!-- end -->
     <title>Welcome to cljs-study</title>
   </head>
   <body>
@@ -15,19 +23,15 @@
     <!-- contents -->
     <div class="ink-grid">
       <div class="column-group horizontal-gutters">
-        <div class="all-50">
+        <div class="all-80">
           {% block content %}
           {% endblock %}
         </div>
       </div>
     </div>
+    {% block outer-content %}
+    {% endblock %}
     <!-- scripts and styles -->
-    <link rel="stylesheet" type="text/css" href="http://cdn.ink.sapo.pt/3.0.5/css/ink.css"> <!-- inks css file -->
-    <script type="text/javascript" src="http://cdn.ink.sapo.pt/3.0.5/js/ink-all.js"></script> <!-- inks js bundle -->
-    <link rel="stylesheet" type="text/css" href="/css/screen.css">
-    <script type="text/javascript">
-      var context = "{{servlet-context}}";
-    </script>
     {% block page-scripts %}
     {% endblock %}
   </body>
