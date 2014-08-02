@@ -2,13 +2,22 @@ html,
 body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     height: 100%;
-//    padding-top: 40px;
 }
-.ink-form label {
-    padding-top: 8px
-    padding-bottom: 8px;
+.column-group.gutters > [class*="all-"] {
+    padding-left: 1.0em;  // 1.75em
+    margin-bottom: 1.0em; // 1.75em
 }
 .ink-form .control-group {
-    line-height: 1.5em;
-    margin-bottom: 0.5em;
+    line-height: 1.75em; // 2.0em
+    margin-top: 0.5em;   // ??
+    margin-bottom: 0.75em; // ??
+}
+.ink-form select,.ink-form textarea,.ink-form input[type="text"],.ink-form input[type="password"],.ink-form input[type="datetime"],.ink-form input[type="datetime-local"],.ink-form input[type="date"], .ink-form input[type="month"], .ink-form input[type="time"], .ink-form input[type="week"], .ink-form input[type="number"], .ink-form input[type="email"], .ink-form input[type="url"], .ink-form input[type="search"], .ink-form input[type="tel"], .ink-form input[type="color"] {
+    padding: 4px 6px; // 8px 8px
+}
+.ink-form label {
+    padding-right: 0.5em;
+}
+.ink-form .ink-button {
+    padding: 4px 8px; // 8px 12px
 }
